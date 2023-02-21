@@ -1,4 +1,4 @@
-import React, { PointerEventHandler, PureComponent } from "react";
+import React, { PointerEventHandler, PureComponent, RefObject } from "react";
 import { createRoot } from "react-dom/client";
 import debounce from "lodash.debounce";
 
@@ -119,6 +119,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
   resizeObserver: ResizeObserver | null = null;
   containerNode?: HTMLDivElement | null = null;
+  containerNodeRef: RefObject<HTMLDivElement>;
   unsubscribe = () => {};
 
   constructor(props: Props<T_HT>) {
@@ -126,15 +127,16 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     if (typeof ResizeObserver !== "undefined") {
       this.resizeObserver = new ResizeObserver(this.debouncedScaleValue);
     }
+    this.containerNodeRef = React.createRef();
   }
 
   componentDidMount() {
     this.init();
   }
 
-  attachRef = (ref: HTMLDivElement | null) => {
+  attachRef = () => {
     const { eventBus, resizeObserver: observer } = this;
-    this.containerNode = ref;
+    const ref = (this.containerNode = this.containerNodeRef!.current);
     this.unsubscribe();
 
     if (ref) {
@@ -172,11 +174,12 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
   init() {
     const { pdfDocument } = this.props;
+    this.attachRef();
 
     this.viewer =
       this.viewer ||
       new PDFViewer({
-        container: this.containerNode!,
+        container: this.containerNodeRef!.current!,
         eventBus: this.eventBus,
         // enhanceTextSelection: true, // deprecated. https://github.com/mozilla/pdf.js/issues/9943#issuecomment-409369485
         textLayerMode: 2,
@@ -428,6 +431,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   };
 
   onTextLayerRendered = () => {
+    console.log("onTextLayerRendered");
     this.renderHighlights();
   };
 
@@ -476,6 +480,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   };
 
   onSelectionChange = () => {
+    console.log("onSelectionChange");
     const container = this.containerNode;
     const selection = getWindow(container).getSelection();
 
@@ -540,6 +545,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   };
 
   afterSelection = () => {
+    console.log("afterSelection");
     const { onSelectionFinished } = this.props;
 
     const { isCollapsed, range } = this.state;
@@ -613,7 +619,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     return (
       <div onPointerDown={this.onMouseDown}>
         <div
-          ref={this.attachRef}
+          ref={this.containerNodeRef}
           className="PdfHighlighter"
           onContextMenu={(e) => e.preventDefault()}
         >

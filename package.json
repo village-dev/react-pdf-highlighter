@@ -1,6 +1,6 @@
 {
   "name": "@credolabs/react-pdf-highlighter",
-  "version": "5.6.1",
+  "version": "5.6.3",
   "description": "Set of React components for PDF annotation",
   "author": "Artem Tyurin <artem.tyurin@gmail.com>",
   "license": "MIT",
@@ -18,7 +18,7 @@
   "module": "./dist/esm/index.js",
   "scripts": {
     "start": "npm run dev",
-    "dev": "(cd ./example && vite)",
+    "dev": "(cd ./example && vite --port 4000)",
     "build": "npm run clean && npm run build:esm && npm run build:cjs && npm run build:copy-styles && npm run build:example",
     "build:esm": "tsc",
     "build:cjs": "tsc --module commonjs --outDir ./dist/cjs",
